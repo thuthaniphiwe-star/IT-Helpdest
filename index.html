@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IT Helpdesk Support</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; }
@@ -79,6 +79,8 @@
         </div>
 
         <header class="mb-10 text-center">
+            <img src="data:image/jpeg;base64,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" 
+                 alt="GSM Systems Logo" class="h-16 mx-auto mb-6">
             <h1 class="text-5xl font-black text-slate-900 mb-3 tracking-tight">IT Helpdesk</h1>
             <p class="text-lg text-slate-500 max-w-md mx-auto leading-relaxed">Submit a ticket and we'll get back to you as soon as possible.</p>
         </header>
@@ -86,15 +88,9 @@
         <div class="bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
             <div class="p-8 sm:p-12">
                 <form id="ticketForm" class="space-y-8">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div>
-                            <label for="name" class="block text-sm font-bold text-slate-700 mb-2">Full Name</label>
-                            <input type="text" id="name" required placeholder="John Doe" class="w-full px-5 py-4 rounded-xl bg-slate-50 border border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all">
-                        </div>
-                        <div>
-                            <label for="email" class="block text-sm font-bold text-slate-700 mb-2">Email Address</label>
-                            <input type="email" id="email" required placeholder="john@company.com" class="w-full px-5 py-4 rounded-xl bg-slate-50 border border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all">
-                        </div>
+                    <div>
+                        <label for="name" class="block text-sm font-bold text-slate-700 mb-2">Full Name</label>
+                        <input type="text" id="name" required placeholder="John Doe" class="w-full px-5 py-4 rounded-xl bg-slate-50 border border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all">
                     </div>
 
                     <div>
@@ -112,11 +108,6 @@
                     <div>
                         <label for="subject" class="block text-sm font-bold text-slate-700 mb-2">Subject</label>
                         <input type="text" id="subject" required placeholder="Brief summary of the issue" class="w-full px-5 py-4 rounded-xl bg-slate-50 border border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all">
-                    </div>
-
-                    <div>
-                        <label for="description" class="block text-sm font-bold text-slate-700 mb-2">Description</label>
-                        <textarea id="description" rows="5" required placeholder="Please provide as much detail as possible..." class="w-full px-5 py-4 rounded-xl bg-slate-50 border border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all"></textarea>
                     </div>
 
                     <button type="submit" id="submitBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-5 px-8 rounded-2xl transition-all shadow-xl shadow-blue-500/20 transform hover:-translate-y-1 active:scale-95 text-lg">
@@ -263,10 +254,8 @@
 
             const { error } = await supabaseClient.from('tickets').insert([{
                 name: document.getElementById('name').value,
-                email: document.getElementById('email').value,
                 issue_type: document.getElementById('issue_type').value,
                 subject: document.getElementById('subject').value,
-                description: document.getElementById('description').value,
                 status: 'open',
                 created_at: new Date().toISOString()
             }]);
