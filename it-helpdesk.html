@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>IT Helpdesk</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:system-ui,sans-serif;background:#f4f5f7;color:#1a1a1a;min-height:100vh}
+  .app{display:flex;min-height:100vh}
+  .sidebar{width:220px;min-width:220px;background:#1e2a3a;display:flex;flex-direction:column}
+  .sidebar-header{padding:20px 16px;border-bottom:1px solid #2d3f52}
+  .sidebar-header h2{color:#fff;font-size:16px;font-weight:600}
+  .sidebar-header p{color:#7a9bb5;font-size:12px;margin-top:3px}
+  .nav-item{padding:11px 16px;font-size:13px;cursor:pointer;color:#7a9bb5;display:flex;align-items:center;gap:10px;border-left:3px solid transparent}
+  .nav-item:hover{color:#fff;background:#2d3f52}
+  .nav-item.active{color:#fff;border-left-color:#4a9eff;background:#2d3f52}
+  .badge{background:#4a9eff;color:#fff;font-size:10px;padding:1px 6px;border-radius:10px;margin-left:auto}
+  .main{flex:1;display:flex;flex-direction:column}
+  .topbar{padding:14px 24px;border-bottom:1px solid #e0e4ea;background:#fff;display:flex;align-items:center;justify-content:space-between}
+  .topbar h1{font-size:17px;font-weight:600}
+  .topbar span{font-size:12px;color:#888}
+  .content{flex:1;padding:24px;overflow-y:auto}
+  .view{display:none}
+  .view.active{display:block}
+  .card{background:#fff;border:1px solid #e0e4ea;border-radius:12px;padding:20px 24px;margin-bottom:16px}
+  label{font-size:12px;color:#555;display:block;margin-bottom:5px;margin-top:14px;font-weight:500}
+  label:first-child{margin-top:0}
+  select,input,textarea{width:100%;font-size:14px;padding:9px 12px;border:1px solid #d0d5dd;border-radius:8px;background:#fff;color:#1a1a1a;font-family:inherit;outline:none}
+  select:focus,input:focus,textarea:focus{border-color:#4a9eff;box-shadow:0 0 0 3px rgba(74,158,255,0.1)}
+  textarea{resize:vertical;min-height:80px}
+  .priority-row{display:flex;gap:8px;margin-top:6px}
+  .priority-btn{flex:1;padding:8px 0;font-size:13px;border-radius:8px;border:1px solid #d0d5dd;cursor:pointer;background:#fff;color:#555;text-align:center;transition:all .15s}
+  .priority-btn:hover{border-color:#999}
+  .priority-btn.sel-low{background:#ecfdf5;color:#166534;border-color:#4ade80}
+  .priority-btn.sel-medium{background:#fffbeb;color:#92400e;border-color:#f59e0b}
+  .priority-btn.sel-high{background:#fef2f2;color:#991b1b;border-color:#f87171}
+  .submit-btn{width:100%;margin-top:18px;padding:11px;background:#1e5fa8;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .15s}
+  .submit-btn:hover{background:#164d8a}
+  .submit-btn:disabled{opacity:0.5;cursor:default}
+  .success-box{background:#ecfdf5;border:1px solid #4ade80;border-radius:12px;padding:28px;text-align:center;display:none}
+  .check{width:48px;height:48px;border-radius:50%;background:#bbf7d0;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:22px}
+  .success-box h3{font-size:16px;font-weight:600;color:#166534}
+  .success-box p{font-size:13px;color:#15803d;margin-top:5px}
+  .new-req-btn{margin-top:14px;padding:8px 18px;border:1px solid #4ade80;border-radius:8px;background:transparent;color:#166534;cursor:pointer;font-size:13px;font-family:inherit}
+  .it-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px}
+  .it-card{background:#fff;border:1px solid #e0e4ea;border-radius:12px;padding:16px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center}
+  .avatar{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:600}
+  .av-blue{background:#dbeafe;color:#1e40af}
+  .av-purple{background:#ede9fe;color:#5b21b6}
+  .av-teal{background:#ccfbf1;color:#0f766e}
+  .av-coral{background:#fee2e2;color:#991b1b}
+  .av-green{background:#dcfce7;color:#166534}
+  .it-name{font-size:13px;font-weight:600;color:#1a1a1a}
+  .it-role{font-size:11px;color:#888}
+  .status-pill{font-size:11px;padding:3px 12px;border-radius:20px;font-weight:600}
+  .free{background:#dcfce7;color:#166534}
+  .busy{background:#fef3c7;color:#92400e}
+  .busy-time{font-size:11px;color:#aaa}
+  .stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+  .stat-card{background:#fff;border:1px solid #e0e4ea;border-radius:10px;padding:16px}
+  .stat-label{font-size:11px;color:#888;font-weight:500}
+  .stat-val{font-size:26px;font-weight:700;color:#1a1a1a;margin-top:4px}
+  .section-title{font-size:13px;font-weight:600;color:#555;margin-bottom:12px;text-transform:uppercase;letter-spacing:.5px}
+  .ticket-row{display:flex;align-items:flex-start;gap:12px;padding:14px 0;border-bottom:1px solid #f0f0f0}
+  .ticket-row:last-child{border-bottom:none}
+  .ticket-info{flex:1}
+  .ticket-name{font-size:14px;font-weight:600;color:#1a1a1a}
+  .ticket-cat{font-size:12px;color:#666;margin-top:2px}
+  .ticket-desc{font-size:12px;color:#999;margin-top:4px}
+  .ticket-meta{display:flex;gap:8px;align-items:center;margin-top:6px}
+  .pri-tag{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:600}
+  .pri-low{background:#dcfce7;color:#166534}
+  .pri-medium{background:#fef3c7;color:#92400e}
+  .pri-high{background:#fee2e2;color:#991b1b}
+  .ticket-time{font-size:11px;color:#bbb}
+  .empty{text-align:center;padding:48px;color:#bbb;font-size:14px}
+  .loading{text-align:center;padding:32px;color:#888;font-size:13px}
+  .error-msg{background:#fef2f2;border:1px solid #fca5a5;color:#991b1b;padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:12px;display:none}
+  .resolve-btn{font-size:11px;padding:3px 10px;border:1px solid #d0d5dd;border-radius:6px;background:#fff;cursor:pointer;color:#555;font-family:inherit}
+  .resolve-btn:hover{background:#f0f0f0}
+  .ticket-status-badge{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:600}
+  .open-badge{background:#dbeafe;color:#1e40af}
+  .resolved-badge{background:#f0f0f0;color:#888}
+  .filter-row{display:flex;gap:8px;margin-bottom:16px}
+  .filter-btn{padding:6px 14px;font-size:12px;border:1px solid #d0d5dd;border-radius:20px;background:#fff;cursor:pointer;color:#555;font-family:inherit}
+  .filter-btn.active{background:#1e5fa8;color:#fff;border-color:#1e5fa8}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <h2>IT Helpdesk</h2>
+      <p>Internal Support Portal</p>
+    </div>
+    <div class="nav-item active" onclick="switchView('request')">
+      <svg width="16" height="16" fill="none" viewBox="0 0 16 16"><rect x="2" y="2" width="5" height="5" rx="1" fill="currentColor" opacity=".8"/><rect x="9" y="2" width="5" height="5" rx="1" fill="currentColor" opacity=".8"/><rect x="2" y="9" width="5" height="5" rx="1" fill="currentColor" opacity=".5"/><rect x="9" y="9" width="5" height="5" rx="1" fill="currentColor" opacity=".5"/></svg>
+      Request help
+    </div>
+    <div class="nav-item" onclick="switchView('status')">
+      <svg width="16" height="16" fill="none" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.3" opacity=".8"/><circle cx="8" cy="8" r="2.5" fill="currentColor" opacity=".8"/></svg>
+      IT team status
+    </div>
+    <div class="nav-item" onclick="switchView('queue')">
+      <svg width="16" height="16" fill="none" viewBox="0 0 16 16"><line x1="3" y1="4" x2="13" y2="4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" opacity=".8"/><line x1="3" y1="8" x2="10" y2="8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" opacity=".8"/><line x1="3" y1="12" x2="7" y2="12" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" opacity=".8"/></svg>
+      Queue
+      <span class="badge" id="queue-count">0</span>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <h1 id="view-title">Submit a request</h1>
+      <span id="topbar-date"></span>
+    </div>
+    <div class="content">
+
+      <div class="view active" id="view-request">
+        <div class="card" id="form-card">
+          <div class="error-msg" id="form-error"></div>
+          <label>Your name</label>
+          <select id="emp-select">
+            <option value="">— Select your name —</option>
+          </select>
+          <label>Issue category</label>
+          <select id="cat-select">
+            <option value="">— Select category —</option>
+            <option>Hardware</option>
+            <option>Software</option>
+            <option>Network / Connectivity</option>
+            <option>Account &amp; Access</option>
+            <option>Email &amp; Calendar</option>
+            <option>Printer / Scanner</option>
+            <option>Other</option>
+          </select>
+          <label>Description</label>
+          <textarea id="desc-input" placeholder="Briefly describe your issue..."></textarea>
+          <label>Priority</label>
+          <div class="priority-row">
+            <div class="priority-btn" id="pri-low" onclick="setPriority('low')">Low</div>
+            <div class="priority-btn" id="pri-medium" onclick="setPriority('medium')">Medium</div>
+            <div class="priority-btn" id="pri-high" onclick="setPriority('high')">High</div>
+          </div>
+          <button class="submit-btn" id="submit-btn" onclick="submitRequest()">Submit request</button>
+        </div>
+        <div class="success-box" id="success-box">
+          <div class="check">✓</div>
+          <h3>Request submitted!</h3>
+          <p id="success-msg"></p>
+          <button class="new-req-btn" onclick="resetForm()">Submit another request</button>
+        </div>
+      </div>
+
+      <div class="view" id="view-status">
+        <div class="stats-row">
+          <div class="stat-card"><div class="stat-label">Team members</div><div class="stat-val" id="team-count">—</div></div>
+          <div class="stat-card"><div class="stat-label">Available now</div><div class="stat-val" id="avail-count">—</div></div>
+          <div class="stat-card"><div class="stat-label">Open tickets</div><div class="stat-val" id="open-count">—</div></div>
+        </div>
+        <div class="section-title">IT team</div>
+        <div class="it-grid" id="it-grid"><div class="loading">Loading team...</div></div>
+      </div>
+
+      <div class="view" id="view-queue">
+        <div class="filter-row">
+          <button class="filter-btn active" onclick="filterQueue('open', this)">Open</button>
+          <button class="filter-btn" onclick="filterQueue('resolved', this)">Resolved</button>
+          <button class="filter-btn" onclick="filterQueue('all', this)">All</button>
+        </div>
+        <div class="card">
+          <div class="section-title">Requests</div>
+          <div id="queue-list"><div class="loading">Loading tickets...</div></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://sruzjqxxvjkzzsfopzwu.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNydXpqcXh4dmprenpzZm9wend1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzOTQ5NjMsImV4cCI6MjA5MTk3MDk2M30.T_8RwXa6XbS6HOIowZqt5hm5BeLD_tnpbv_OwILqcw8';
+const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let selectedPriority = '';
+let allTickets = [];
+let currentFilter = 'open';
+const avColors = ['av-blue','av-purple','av-teal','av-coral','av-green'];
+
+function getInitials(name) {
+  return name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+}
+function getAv(name) {
+  let hash = 0;
+  for (let c of name) hash += c.charCodeAt(0);
+  return avColors[hash % avColors.length];
+}
+function formatTime(ts) {
+  const d = new Date(ts);
+  return d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+}
+function formatDate(ts) {
+  return new Date(ts).toLocaleDateString('en-ZA', {day:'numeric',month:'short',year:'numeric'});
+}
+
+async function loadEmployees() {
+  const { data, error } = await db.from('employees').select('name').order('name');
+  if (error || !data) return;
+  const sel = document.getElementById('emp-select');
+  data.forEach(e => {
+    const opt = document.createElement('option');
+    opt.value = e.name;
+    opt.textContent = e.name;
+    sel.appendChild(opt);
+  });
+}
+
+async function loadITStatus() {
+  const { data, error } = await db.from('it_staff').select('*').order('name');
+  if (error || !data) { document.getElementById('it-grid').innerHTML = '<div class="empty">Could not load team.</div>'; return; }
+  document.getElementById('team-count').textContent = data.length;
+  document.getElementById('avail-count').textContent = data.filter(p => p.status === 'free').length;
+  const grid = document.getElementById('it-grid');
+  grid.innerHTML = data.map(p => {
+    const pill = p.status === 'free'
+      ? `<span class="status-pill free">Available</span>`
+      : `<span class="status-pill busy">Busy</span>`;
+    const busyLine = p.busy_until
+      ? `<div class="busy-time">Free ~${formatTime(p.busy_until)}</div>` : '';
+    return `<div class="it-card">
+      <div class="avatar ${getAv(p.name)}">${getInitials(p.name)}</div>
+      <div class="it-name">${p.name}</div>
+      <div class="it-role">${p.role || 'IT Staff'}</div>
+      ${pill}${busyLine}
+    </div>`;
+  }).join('');
+}
+
+async function loadTickets() {
+  const { data, error } = await db.from('tickets').select('*').order('created_at', { ascending: false });
+  if (error || !data) { document.getElementById('queue-list').innerHTML = '<div class="empty">Could not load tickets.</div>'; return; }
+  allTickets = data;
+  updateQueueBadge();
+  renderQueue();
+  updateOpenCount();
+}
+
+function updateOpenCount() {
+  document.getElementById('open-count').textContent = allTickets.filter(t => t.status === 'open').length;
+}
+
+function updateQueueBadge() {
+  document.getElementById('queue-count').textContent = allTickets.filter(t => t.status === 'open').length;
+}
+
+function filterQueue(filter, btn) {
+  currentFilter = filter;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderQueue();
+}
+
+function renderQueue() {
+  const list = document.getElementById('queue-list');
+  const filtered = currentFilter === 'all' ? allTickets : allTickets.filter(t => t.status === currentFilter);
+  if (!filtered.length) { list.innerHTML = '<div class="empty">No tickets here.</div>'; return; }
+  list.innerHTML = filtered.map(t => {
+    const badge = t.status === 'open'
+      ? `<span class="ticket-status-badge open-badge">Open</span>`
+      : `<span class="ticket-status-badge resolved-badge">Resolved</span>`;
+    const resolveBtn = t.status === 'open'
+      ? `<button class="resolve-btn" onclick="resolveTicket('${t.id}')">Mark resolved</button>` : '';
+    return `<div class="ticket-row" id="ticket-${t.id}">
+      <div class="avatar ${getAv(t.employee_name)}" style="width:38px;height:38px;font-size:12px;flex-shrink:0;">${getInitials(t.employee_name)}</div>
+      <div class="ticket-info">
+        <div class="ticket-name">${t.employee_name}</div>
+        <div class="ticket-cat">${t.category}</div>
+        <div class="ticket-desc">${t.description || 'No description provided.'}</div>
+        <div class="ticket-meta">
+          <span class="pri-tag pri-${t.priority}">${t.priority}</span>
+          ${badge}
+          <span class="ticket-time">${formatDate(t.created_at)} ${formatTime(t.created_at)}</span>
+          ${resolveBtn}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function resolveTicket(id) {
+  const { error } = await db.from('tickets').update({ status: 'resolved' }).eq('id', id);
+  if (!error) loadTickets();
+}
+
+function setPriority(p) {
+  selectedPriority = p;
+  ['low','medium','high'].forEach(x => {
+    document.getElementById('pri-' + x).className = 'priority-btn' + (x === p ? ' sel-' + x : '');
+  });
+}
+
+async function submitRequest() {
+  const name = document.getElementById('emp-select').value;
+  const cat = document.getElementById('cat-select').value;
+  const desc = document.getElementById('desc-input').value.trim();
+  const errEl = document.getElementById('form-error');
+  errEl.style.display = 'none';
+  if (!name || !cat || !selectedPriority) {
+    errEl.textContent = 'Please fill in your name, category, and priority.';
+    errEl.style.display = 'block';
+    return;
+  }
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  btn.textContent = 'Submitting...';
+  const { error } = await db.from('tickets').insert({ employee_name: name, category: cat, description: desc, priority: selectedPriority, status: 'open' });
+  btn.disabled = false;
+  btn.textContent = 'Submit request';
+  if (error) {
+    errEl.textContent = 'Something went wrong. Please try again.';
+    errEl.style.display = 'block';
+    return;
+  }
+  document.getElementById('form-card').style.display = 'none';
+  document.getElementById('success-box').style.display = 'block';
+  document.getElementById('success-msg').textContent = `Hi ${name.split(' ')[0]}, your ticket has been added to the queue. The IT team will be with you shortly.`;
+  loadTickets();
+}
+
+function resetForm() {
+  document.getElementById('emp-select').value = '';
+  document.getElementById('cat-select').value = '';
+  document.getElementById('desc-input').value = '';
+  selectedPriority = '';
+  ['low','medium','high'].forEach(x => document.getElementById('pri-'+x).className = 'priority-btn');
+  document.getElementById('form-card').style.display = 'block';
+  document.getElementById('success-box').style.display = 'none';
+}
+
+const viewTitles = { request: 'Submit a request', status: 'IT team status', queue: 'Request queue' };
+function switchView(v) {
+  document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  document.getElementById('view-' + v).classList.add('active');
+  const navItems = document.querySelectorAll('.nav-item');
+  const idx = Object.keys(viewTitles).indexOf(v);
+  navItems[idx].classList.add('active');
+  document.getElementById('view-title').textContent = viewTitles[v];
+  if (v === 'status') loadITStatus();
+  if (v === 'queue') loadTickets();
+}
+
+document.getElementById('topbar-date').textContent = new Date().toLocaleDateString('en-ZA', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
+
+db.channel('tickets-live')
+  .on('postgres_changes', { event: '*', schema: 'public', table: 'tickets' }, () => { loadTickets(); })
+  .subscribe();
+
+loadEmployees();
+loadTickets();
+</script>
+</body>
+</html>
