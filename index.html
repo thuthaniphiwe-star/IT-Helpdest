@@ -13,8 +13,6 @@
         .status-dot { width: 12px; height: 12px; border-radius: 50%; }
         .status-dot.available { background-color: #10b981; box-shadow: 0 0 8px #10b981; }
         .status-dot.busy { background-color: #ef4444; }
-        /* Ensure modal is always on top */
-        #loginModal { z-index: 9999 !important; }
     </style>
 </head>
 <body class="bg-slate-50 min-h-screen">
@@ -30,11 +28,8 @@
                 </div>
             </div>
             
-            <!-- LOGIN BUTTON WITH EXPLICIT ONCLICK FOR TESTING -->
-            <button id="adminLoginBtn" onclick="openLoginModal()" class="flex items-center gap-2 px-4 py-2 bg-slate-800 text-white text-sm font-bold rounded-lg hover:bg-blue-600 transition-all shadow-md">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-                </svg>
+            <!-- SIMPLE LOGIN BUTTON -->
+            <button onclick="promptForLogin()" class="flex items-center gap-2 px-4 py-2 bg-slate-800 text-white text-sm font-bold rounded-lg hover:bg-blue-600 transition-all shadow-md">
                 Technician Login
             </button>
         </div>
@@ -43,37 +38,15 @@
         <div id="adminPanel" style="display: none;" class="mb-8 p-6 bg-gradient-to-r from-blue-900 to-indigo-900 text-white rounded-2xl shadow-xl border border-blue-800">
             <div class="flex flex-col md:flex-row items-center justify-between gap-6">
                 <div class="text-center md:text-left">
-                    <h3 class="text-xl font-bold flex items-center gap-2 justify-center md:justify-start">
-                        <span class="p-1 bg-blue-500/20 rounded">🛠️</span>
-                        Technician Dashboard
-                    </h3>
+                    <h3 class="text-xl font-bold">Technician Dashboard</h3>
                     <p class="text-blue-200 text-sm mt-1">Control your public availability status</p>
                 </div>
                 <div class="flex flex-wrap items-center justify-center gap-3">
-                    <button id="statusToggleBtn" onclick="toggleStatus()" class="px-8 py-3 bg-white text-blue-900 font-black rounded-xl hover:bg-blue-50 transition-all shadow-lg">
+                    <button onclick="toggleStatus()" class="px-8 py-3 bg-white text-blue-900 font-black rounded-xl hover:bg-blue-50 transition-all shadow-lg">
                         Switch Status
                     </button>
-                    <button onclick="logout()" class="px-5 py-3 bg-blue-800/50 text-blue-100 text-sm font-bold rounded-xl hover:bg-red-500/20 hover:text-red-200 transition-all border border-blue-700">
+                    <button onclick="location.reload()" class="px-5 py-3 bg-blue-800/50 text-blue-100 text-sm font-bold rounded-xl border border-blue-700">
                         Logout
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- LOGIN MODAL -->
-        <div id="loginModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(4px); align-items: center; justify-content: center; z-index: 9999;">
-            <div class="bg-white p-8 rounded-2xl shadow-2xl max-w-sm w-full border border-slate-200">
-                <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">🔐</div>
-                <h2 class="text-2xl font-black text-slate-900 mb-2 text-center">Technician Access</h2>
-                <p class="text-slate-500 text-center mb-6 text-sm">Enter your secret passcode</p>
-                
-                <div class="space-y-4">
-                    <input type="password" id="passcodeInput" placeholder="••••" class="w-full px-4 py-4 text-center text-2xl rounded-xl border-2 border-slate-100 focus:border-blue-500 outline-none font-mono">
-                    <button onclick="handleLogin()" class="w-full bg-blue-600 text-white font-black py-4 rounded-xl hover:bg-blue-700 transition-all shadow-lg">
-                        Unlock Dashboard
-                    </button>
-                    <button onclick="closeLoginModal()" class="w-full text-slate-400 text-sm font-bold hover:text-slate-600 py-2">
-                        Cancel
                     </button>
                 </div>
             </div>
@@ -140,28 +113,15 @@
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         let currentStatus = 'available';
 
-        // Functions defined globally to ensure they are accessible
-        window.openLoginModal = function() {
-            document.getElementById('loginModal').style.display = 'flex';
-        };
-
-        window.closeLoginModal = function() {
-            document.getElementById('loginModal').style.display = 'none';
-        };
-
-        window.handleLogin = function() {
-            const input = document.getElementById('passcodeInput').value.trim();
-            if (input === TECH_PASSCODE) {
-                document.getElementById('loginModal').style.display = 'none';
+        // SIMPLE LOGIN PROMPT
+        window.promptForLogin = function() {
+            const code = prompt("Enter Technician Passcode:");
+            if (code === TECH_PASSCODE) {
                 document.getElementById('adminPanel').style.display = 'block';
-                document.getElementById('passcodeInput').value = '';
-            } else {
-                alert('Incorrect Passcode!');
+                alert("Login Successful!");
+            } else if (code !== null) {
+                alert("Incorrect Passcode.");
             }
-        };
-
-        window.logout = function() {
-            document.getElementById('adminPanel').style.display = 'none';
         };
 
         window.toggleStatus = async function() {
@@ -173,8 +133,9 @@
             if (!error) {
                 currentStatus = newStatus;
                 updateUI();
+                alert("Status updated to: " + newStatus.toUpperCase());
             } else {
-                alert('Error updating status: ' + error.message);
+                alert('Error: ' + error.message);
             }
         };
 
@@ -193,11 +154,13 @@
         }
 
         async function loadStatus() {
-            const { data } = await supabase.from('technician_status').select('status').eq('id', 1).single();
-            if (data) {
-                currentStatus = data.status;
-                updateUI();
-            }
+            try {
+                const { data } = await supabase.from('technician_status').select('status').eq('id', 1).single();
+                if (data) {
+                    currentStatus = data.status;
+                    updateUI();
+                }
+            } catch (e) {}
         }
 
         // Ticket Logic
@@ -219,7 +182,7 @@
             const msg = document.getElementById('statusMessage');
             msg.classList.remove('hidden');
             if (!error) {
-                msg.textContent = 'Success!';
+                msg.textContent = 'Ticket Submitted Successfully!';
                 msg.className = 'mt-8 p-6 rounded-2xl bg-green-50 text-green-800 border-green-200';
                 e.target.reset();
             } else {
