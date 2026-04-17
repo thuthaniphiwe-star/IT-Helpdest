@@ -103,97 +103,98 @@
         </footer>
     </div>
 
-    <script>
-        // --- CONFIGURATION ---
-        const SUPABASE_URL = 'https://sruzjqxxvjkzzsfopzwu.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNydXpqcXh4dmprenpzZm9wend1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzOTQ5NjMsImV4cCI6MjA5MTk3MDk2M30.T_8RwXa6XbS6HOIowZqt5hm5BeLD_tnpbv_OwILqcw8';
-        const TECH_PASSCODE = '1234'; // CHANGE THIS
-
-        // Initialize Supabase
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        let currentStatus = 'available';
-
-        // SIMPLE LOGIN PROMPT
-        window.promptForLogin = function() {
-            const code = prompt("Enter Technician Passcode:");
-            if (code === TECH_PASSCODE) {
-                document.getElementById('adminPanel').style.display = 'block';
-                alert("Login Successful!");
-            } else if (code !== null) {
-                alert("Incorrect Passcode.");
-            }
-        };
-
-        window.toggleStatus = async function() {
-            const newStatus = currentStatus === 'available' ? 'busy' : 'available';
-            const { error } = await supabase
+   <script>
+    // --- CONFIGURATION ---
+    const SUPABASE_URL = '[sruzjqxxvjkzzsfopzwu.supabase.co](https://sruzjqxxvjkzzsfopzwu.supabase.co)';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNydXpqcXh4dmprenpzZm9wend1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzOTQ5NjMsImV4cCI6MjA5MTk3MDk2M30.T_8RwXa6XbS6HOIowZqt5hm5BeLD_tnpbv_OwILqcw8';
+    const TECH_PASSCODE = '1234'; // CHANGE THIS
+    // ✅ Initialize Supabase (avoid naming conflict)
+    const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    let currentStatus = 'available';
+    // SIMPLE LOGIN PROMPT
+    window.promptForLogin = function () {
+        const code = prompt("Enter Technician Passcode:");
+        if (code === TECH_PASSCODE) {
+            document.getElementById('adminPanel').style.display = 'block';
+            alert("Login Successful!");
+        } else if (code !== null) {
+            alert("Incorrect Passcode.");
+        }
+    };
+    // TOGGLE STATUS
+    window.toggleStatus = async function () {
+        const newStatus = currentStatus === 'available' ? 'busy' : 'available';
+        const { error } = await db
+            .from('technician_status')
+            .upsert({ id: 1, status: newStatus, updated_at: new Date().toISOString() });
+        if (!error) {
+            currentStatus = newStatus;
+            updateUI();
+            alert("Status updated to: " + newStatus.toUpperCase());
+        } else {
+            alert('Error: ' + error.message);
+        }
+    };
+    function updateUI() {
+        const text = document.getElementById('publicStatusText');
+        const dot = document.getElementById('publicStatusDot');
+        if (currentStatus === 'available') {
+            text.textContent = 'AVAILABLE';
+            text.className = 'font-bold text-green-700 text-sm';
+            dot.className = 'status-dot available';
+        } else {
+            text.textContent = 'BUSY';
+            text.className = 'font-bold text-red-600 text-sm';
+            dot.className = 'status-dot busy';
+        }
+    }
+    async function loadStatus() {
+        try {
+            const { data } = await db
                 .from('technician_status')
-                .upsert({ id: 1, status: newStatus, updated_at: new Date().toISOString() });
-
-            if (!error) {
-                currentStatus = newStatus;
+                .select('status')
+                .eq('id', 1)
+                .single();
+            if (data) {
+                currentStatus = data.status;
                 updateUI();
-                alert("Status updated to: " + newStatus.toUpperCase());
-            } else {
-                alert('Error: ' + error.message);
             }
-        };
-
-        function updateUI() {
-            const text = document.getElementById('publicStatusText');
-            const dot = document.getElementById('publicStatusDot');
-            if (currentStatus === 'available') {
-                text.textContent = 'AVAILABLE';
-                text.className = 'font-bold text-green-700 text-sm';
-                dot.className = 'status-dot available';
-            } else {
-                text.textContent = 'BUSY';
-                text.className = 'font-bold text-red-600 text-sm';
-                dot.className = 'status-dot busy';
-            }
+        } catch (e) {
+            console.error(e);
         }
-
-        async function loadStatus() {
-            try {
-                const { data } = await supabase.from('technician_status').select('status').eq('id', 1).single();
-                if (data) {
-                    currentStatus = data.status;
-                    updateUI();
-                }
-            } catch (e) {}
-        }
-
-        // Ticket Logic
-        document.getElementById('ticketForm').onsubmit = async (e) => {
-            e.preventDefault();
-            const btn = document.getElementById('submitBtn');
-            btn.disabled = true;
-            btn.textContent = 'Submitting...';
-
-            const { error } = await supabase.from('tickets').insert([{
+    }
+    // Ticket Logic
+    document.getElementById('ticketForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('submitBtn');
+        btn.disabled = true;
+        btn.textContent = 'Submitting...';
+        const { error } = await db.from('tickets').insert([
+            {
                 name: document.getElementById('name').value,
                 email: document.getElementById('email').value,
                 issue_type: document.getElementById('issue_type').value,
                 subject: document.getElementById('subject').value,
                 description: document.getElementById('description').value,
-                status: 'open'
-            }]);
-
-            const msg = document.getElementById('statusMessage');
-            msg.classList.remove('hidden');
-            if (!error) {
-                msg.textContent = 'Ticket Submitted Successfully!';
-                msg.className = 'mt-8 p-6 rounded-2xl bg-green-50 text-green-800 border-green-200';
-                e.target.reset();
-            } else {
-                msg.textContent = 'Error: ' + error.message;
-                msg.className = 'mt-8 p-6 rounded-2xl bg-red-50 text-red-800 border-red-200';
-            }
-            btn.disabled = false;
-            btn.textContent = 'Submit Support Ticket';
-        };
-
-        loadStatus();
-    </script>
+                status: 'open',
+            },
+        ]);
+        const msg = document.getElementById('statusMessage');
+        msg.classList.remove('hidden');
+        if (!error) {
+            msg.textContent = 'Ticket Submitted Successfully!';
+            msg.className =
+                'mt-8 p-6 rounded-2xl bg-green-50 text-green-800 border-green-200';
+            e.target.reset();
+        } else {
+            msg.textContent = 'Error: ' + error.message;
+            msg.className =
+                'mt-8 p-6 rounded-2xl bg-red-50 text-red-800 border-red-200';
+        }
+        btn.disabled = false;
+        btn.textContent = 'Submit Support Ticket';
+    };
+    loadStatus();
+</script>
 </body>
 </html>
