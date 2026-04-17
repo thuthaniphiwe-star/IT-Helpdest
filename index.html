@@ -28,25 +28,52 @@
                 </div>
             </div>
             
-            <!-- SIMPLE LOGIN BUTTON -->
-            <button onclick="promptForLogin()" class="flex items-center gap-2 px-4 py-2 bg-slate-800 text-white text-sm font-bold rounded-lg hover:bg-blue-600 transition-all shadow-md">
+            <!-- VERY VISIBLE LOGIN BUTTON -->
+            <button id="adminLoginBtn" class="flex items-center gap-2 px-4 py-2 bg-slate-800 text-white text-sm font-bold rounded-lg hover:bg-blue-600 transition-all shadow-md">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                </svg>
                 Technician Login
             </button>
         </div>
 
-        <!-- ADMIN PANEL -->
+        <!-- ADMIN PANEL (HIDDEN BY DEFAULT) -->
         <div id="adminPanel" style="display: none;" class="mb-8 p-6 bg-gradient-to-r from-blue-900 to-indigo-900 text-white rounded-2xl shadow-xl border border-blue-800">
             <div class="flex flex-col md:flex-row items-center justify-between gap-6">
                 <div class="text-center md:text-left">
-                    <h3 class="text-xl font-bold">Technician Dashboard</h3>
+                    <h3 class="text-xl font-bold flex items-center gap-2 justify-center md:justify-start">
+                        <span class="p-1 bg-blue-500/20 rounded">🛠️</span>
+                        Technician Dashboard
+                    </h3>
                     <p class="text-blue-200 text-sm mt-1">Control your public availability status</p>
                 </div>
                 <div class="flex flex-wrap items-center justify-center gap-3">
-                    <button onclick="toggleStatus()" class="px-8 py-3 bg-white text-blue-900 font-black rounded-xl hover:bg-blue-50 transition-all shadow-lg">
-                        Switch Status
+                    <button id="statusToggleBtn" class="px-8 py-3 bg-white text-blue-900 font-black rounded-xl hover:bg-blue-50 transition-all shadow-lg">
+                        Switch to Busy
                     </button>
-                    <button onclick="location.reload()" class="px-5 py-3 bg-blue-800/50 text-blue-100 text-sm font-bold rounded-xl border border-blue-700">
+                    <button id="logoutBtn" class="px-5 py-3 bg-blue-800/50 text-blue-100 text-sm font-bold rounded-xl hover:bg-red-500/20 hover:text-red-200 transition-all border border-blue-700">
                         Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- LOGIN MODAL (HIDDEN BY DEFAULT) -->
+        <div id="loginModal" style="display: none;" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-50 p-4">
+            <div class="bg-white p-8 rounded-2xl shadow-2xl max-w-sm w-full border border-slate-200">
+                <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">🔐</div>
+                <h2 class="text-2xl font-black text-slate-900 mb-2 text-center">Technician Access</h2>
+                <p class="text-slate-500 text-center mb-6 text-sm">Enter your secret passcode to continue</p>
+                
+                <div class="space-y-4">
+                    <div>
+                        <input type="password" id="passcodeInput" placeholder="••••" class="w-full px-4 py-4 text-center text-2xl rounded-xl border-2 border-slate-100 focus:border-blue-500 outline-none transition-all font-mono">
+                    </div>
+                    <button id="loginSubmitBtn" class="w-full bg-blue-600 text-white font-black py-4 rounded-xl hover:bg-blue-700 transition-all shadow-lg">
+                        Unlock Dashboard
+                    </button>
+                    <button id="closeLoginBtn" class="w-full text-slate-400 text-sm font-bold hover:text-slate-600 transition-colors py-2">
+                        Cancel
                     </button>
                 </div>
             </div>
@@ -57,23 +84,23 @@
             <p class="text-lg text-slate-500 max-w-md mx-auto leading-relaxed">Submit a ticket and we'll get back to you as soon as possible.</p>
         </header>
 
-        <!-- Ticket Form -->
-        <div class="bg-white rounded-3xl shadow-xl border border-slate-100 overflow-hidden">
+        <div class="bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
             <div class="p-8 sm:p-12">
                 <form id="ticketForm" class="space-y-8">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div>
-                            <label class="block text-sm font-bold text-slate-700 mb-2">Full Name</label>
-                            <input type="text" id="name" required class="w-full px-5 py-4 rounded-xl bg-slate-50 border-transparent focus:bg-white focus:border-blue-500 outline-none">
+                            <label for="name" class="block text-sm font-bold text-slate-700 mb-2">Full Name</label>
+                            <input type="text" id="name" required placeholder="John Doe" class="w-full px-5 py-4 rounded-xl bg-slate-50 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all">
                         </div>
                         <div>
-                            <label class="block text-sm font-bold text-slate-700 mb-2">Email Address</label>
-                            <input type="email" id="email" required class="w-full px-5 py-4 rounded-xl bg-slate-50 border-transparent focus:bg-white focus:border-blue-500 outline-none">
+                            <label for="email" class="block text-sm font-bold text-slate-700 mb-2">Email Address</label>
+                            <input type="email" id="email" required placeholder="john@company.com" class="w-full px-5 py-4 rounded-xl bg-slate-50 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all">
                         </div>
                     </div>
+
                     <div>
-                        <label class="block text-sm font-bold text-slate-700 mb-2">Issue Type</label>
-                        <select id="issue_type" required class="w-full px-5 py-4 rounded-xl bg-slate-50 border-transparent focus:bg-white focus:border-blue-500 outline-none">
+                        <label for="issue_type" class="block text-sm font-bold text-slate-700 mb-2">Issue Type</label>
+                        <select id="issue_type" required class="w-full px-5 py-4 rounded-xl bg-slate-50 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all appearance-none">
                             <option value="">Select an issue type</option>
                             <option value="hardware">Hardware Issue</option>
                             <option value="software">Software Issue</option>
@@ -82,15 +109,18 @@
                             <option value="other">Other</option>
                         </select>
                     </div>
+
                     <div>
-                        <label class="block text-sm font-bold text-slate-700 mb-2">Subject</label>
-                        <input type="text" id="subject" required class="w-full px-5 py-4 rounded-xl bg-slate-50 border-transparent focus:bg-white focus:border-blue-500 outline-none">
+                        <label for="subject" class="block text-sm font-bold text-slate-700 mb-2">Subject</label>
+                        <input type="text" id="subject" required placeholder="Brief summary of the issue" class="w-full px-5 py-4 rounded-xl bg-slate-50 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all">
                     </div>
+
                     <div>
-                        <label class="block text-sm font-bold text-slate-700 mb-2">Description</label>
-                        <textarea id="description" rows="5" required class="w-full px-5 py-4 rounded-xl bg-slate-50 border-transparent focus:bg-white focus:border-blue-500 outline-none"></textarea>
+                        <label for="description" class="block text-sm font-bold text-slate-700 mb-2">Description</label>
+                        <textarea id="description" rows="5" required placeholder="Please provide as much detail as possible..." class="w-full px-5 py-4 rounded-xl bg-slate-50 border-transparent focus:bg-white focus:border-blue-500 outline-none transition-all"></textarea>
                     </div>
-                    <button type="submit" id="submitBtn" class="w-full bg-blue-600 text-white font-black py-5 px-8 rounded-2xl shadow-xl hover:bg-blue-700">
+
+                    <button type="submit" id="submitBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-5 px-8 rounded-2xl transition-all shadow-xl shadow-blue-500/20 transform hover:-translate-y-1 active:scale-95 text-lg">
                         Submit Support Ticket
                     </button>
                 </form>
@@ -103,98 +133,132 @@
         </footer>
     </div>
 
-   <script>
-    // --- CONFIGURATION ---
-    const SUPABASE_URL = '[sruzjqxxvjkzzsfopzwu.supabase.co](https://sruzjqxxvjkzzsfopzwu.supabase.co)';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNydXpqcXh4dmprenpzZm9wend1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzOTQ5NjMsImV4cCI6MjA5MTk3MDk2M30.T_8RwXa6XbS6HOIowZqt5hm5BeLD_tnpbv_OwILqcw8';
-    const TECH_PASSCODE = '1234'; // CHANGE THIS
-    // ✅ Initialize Supabase (avoid naming conflict)
-    const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    let currentStatus = 'available';
-    // SIMPLE LOGIN PROMPT
-    window.promptForLogin = function () {
-        const code = prompt("Enter Technician Passcode:");
-        if (code === TECH_PASSCODE) {
-            document.getElementById('adminPanel').style.display = 'block';
-            alert("Login Successful!");
-        } else if (code !== null) {
-            alert("Incorrect Passcode.");
+    <script>
+        // --- CONFIGURATION ---
+        const SUPABASE_URL = 'https://sruzjqxxvjkzzsfopzwu.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNydXpqcXh4dmprenpzZm9wend1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzOTQ5NjMsImV4cCI6MjA5MTk3MDk2M30.T_8RwXa6XbS6HOIowZqt5hm5BeLD_tnpbv_OwILqcw8';
+        const TECH_PASSCODE = '1234'; // CHANGE THIS TO YOUR SECRET CODE
+
+        // Initialize Supabase client
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // Elements
+        const adminLoginBtn = document.getElementById('adminLoginBtn');
+        const loginModal = document.getElementById('loginModal');
+        const adminPanel = document.getElementById('adminPanel');
+        const passcodeInput = document.getElementById('passcodeInput');
+        const loginSubmitBtn = document.getElementById('loginSubmitBtn');
+        const closeLoginBtn = document.getElementById('closeLoginBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const statusToggleBtn = document.getElementById('statusToggleBtn');
+        
+        const publicStatusText = document.getElementById('publicStatusText');
+        const publicStatusDot = document.getElementById('publicStatusDot');
+
+        let currentStatus = 'available';
+
+        // Load Status from Supabase
+        async function loadStatus() {
+            try {
+                const { data, error } = await supabase
+                    .from('technician_status')
+                    .select('status')
+                    .eq('id', 1)
+                    .single();
+
+                if (data) {
+                    currentStatus = data.status;
+                    updateUI();
+                }
+            } catch (err) { console.error(err); }
         }
-    };
-    // TOGGLE STATUS
-    window.toggleStatus = async function () {
-        const newStatus = currentStatus === 'available' ? 'busy' : 'available';
-        const { error } = await db
-            .from('technician_status')
-            .upsert({ id: 1, status: newStatus, updated_at: new Date().toISOString() });
-        if (!error) {
-            currentStatus = newStatus;
-            updateUI();
-            alert("Status updated to: " + newStatus.toUpperCase());
-        } else {
-            alert('Error: ' + error.message);
+
+        function updateUI() {
+            if (currentStatus === 'available') {
+                publicStatusText.textContent = 'AVAILABLE';
+                publicStatusText.className = 'font-bold text-green-700 text-sm';
+                publicStatusDot.className = 'status-dot available';
+                statusToggleBtn.textContent = 'Switch to Busy';
+            } else {
+                publicStatusText.textContent = 'BUSY';
+                publicStatusText.className = 'font-bold text-red-600 text-sm';
+                publicStatusDot.className = 'status-dot busy';
+                statusToggleBtn.textContent = 'Switch to Available';
+            }
         }
-    };
-    function updateUI() {
-        const text = document.getElementById('publicStatusText');
-        const dot = document.getElementById('publicStatusDot');
-        if (currentStatus === 'available') {
-            text.textContent = 'AVAILABLE';
-            text.className = 'font-bold text-green-700 text-sm';
-            dot.className = 'status-dot available';
-        } else {
-            text.textContent = 'BUSY';
-            text.className = 'font-bold text-red-600 text-sm';
-            dot.className = 'status-dot busy';
-        }
-    }
-    async function loadStatus() {
-        try {
-            const { data } = await db
+
+        // Login Logic - Simplified and more robust
+        adminLoginBtn.onclick = function() {
+            loginModal.style.display = 'flex';
+        };
+
+        closeLoginBtn.onclick = function() {
+            loginModal.style.display = 'none';
+        };
+        
+        loginSubmitBtn.onclick = function() {
+            const enteredPasscode = passcodeInput.value.trim();
+            if (enteredPasscode === TECH_PASSCODE) {
+                loginModal.style.display = 'none';
+                adminPanel.style.display = 'block';
+                passcodeInput.value = '';
+            } else {
+                alert('Incorrect Passcode. Try again!');
+                passcodeInput.value = '';
+            }
+        };
+
+        logoutBtn.onclick = function() {
+            adminPanel.style.display = 'none';
+        };
+
+        // Toggle Status
+        statusToggleBtn.onclick = async () => {
+            const newStatus = currentStatus === 'available' ? 'busy' : 'available';
+            const { error } = await supabase
                 .from('technician_status')
-                .select('status')
-                .eq('id', 1)
-                .single();
-            if (data) {
-                currentStatus = data.status;
+                .upsert({ id: 1, status: newStatus, updated_at: new Date().toISOString() });
+
+            if (!error) {
+                currentStatus = newStatus;
                 updateUI();
             }
-        } catch (e) {
-            console.error(e);
-        }
-    }
-    // Ticket Logic
-    document.getElementById('ticketForm').onsubmit = async (e) => {
-        e.preventDefault();
-        const btn = document.getElementById('submitBtn');
-        btn.disabled = true;
-        btn.textContent = 'Submitting...';
-        const { error } = await db.from('tickets').insert([
-            {
+        };
+
+        // Ticket Submission
+        document.getElementById('ticketForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            const msg = document.getElementById('statusMessage');
+            
+            btn.disabled = true;
+            btn.textContent = 'Submitting...';
+
+            const { error } = await supabase.from('tickets').insert([{
                 name: document.getElementById('name').value,
                 email: document.getElementById('email').value,
                 issue_type: document.getElementById('issue_type').value,
                 subject: document.getElementById('subject').value,
                 description: document.getElementById('description').value,
                 status: 'open',
-            },
-        ]);
-        const msg = document.getElementById('statusMessage');
-        msg.classList.remove('hidden');
-        if (!error) {
-            msg.textContent = 'Ticket Submitted Successfully!';
-            msg.className =
-                'mt-8 p-6 rounded-2xl bg-green-50 text-green-800 border-green-200';
-            e.target.reset();
-        } else {
-            msg.textContent = 'Error: ' + error.message;
-            msg.className =
-                'mt-8 p-6 rounded-2xl bg-red-50 text-red-800 border-red-200';
-        }
-        btn.disabled = false;
-        btn.textContent = 'Submit Support Ticket';
-    };
-    loadStatus();
-</script>
+                created_at: new Date().toISOString()
+            }]);
+
+            if (!error) {
+                msg.textContent = 'Ticket Submitted Successfully!';
+                msg.className = 'mt-8 p-6 rounded-2xl bg-green-50 text-green-800 border-green-200';
+                msg.classList.remove('hidden');
+                e.target.reset();
+            } else {
+                msg.textContent = 'Error: ' + error.message;
+                msg.className = 'mt-8 p-6 rounded-2xl bg-red-50 text-red-800 border-red-200';
+                msg.classList.remove('hidden');
+            }
+            btn.disabled = false;
+            btn.textContent = 'Submit Support Ticket';
+        };
+
+        loadStatus();
+    </script>
 </body>
 </html>
